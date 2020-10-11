@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block title %}Users{% endblock %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+    .important { color: #336699; }
+  </style>
+{% endblock %}
+{% block content %}
+  <h1>Users</h1>
+
+  <ul>
+  {% for user in users %}
+  <li>
+  <a href="/users/{{user}}">{{user.full_name}}</a>
+  </li>
+  {% endfor %}
+  </ul>
+
+  <p><a class = "btn btn-sm btn-primary" href="/users/new_user">Add New User</a></p>
+{% endblock %}
