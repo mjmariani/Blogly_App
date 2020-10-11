@@ -1,7 +1,7 @@
 """Blogly application."""
 
 from flask import Flask, request, render_template, redirect, flash, session
-from flask_debugtoolbar import DebugToolbarException
+from flask_debugtoolbar import DebugToolbarExtension
 ###importing db object and connect_db function from models module
 from models import db, connect_db, User 
 
