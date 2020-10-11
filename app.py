@@ -12,10 +12,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True
 app.config['SECRET_KEY'] = "blogging"
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
-debug = DebugToolbarException(app)
+debug = DebugToolbarExtension(app)
 
-##Find out what this is
-##toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 db.create_all()
