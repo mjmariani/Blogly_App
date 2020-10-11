@@ -1,7 +1,7 @@
 """Blogly application."""
 
 from flask import Flask, request, render_template, redirect, flash, session
-from flask_debugtoolbar import DebugToolException
+from flask_debugtoolbar import DebugToolbarException
 ###importing db object and connect_db function from models module
 from models import db, connect_db, User 
 
@@ -12,7 +12,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = True
 app.config['SECRET_KEY'] = "blogging"
 app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
-debug = DebugToolException(app)
+debug = DebugToolbarException(app)
 
 ##Find out what this is
 ##toolbar = DebugToolbarExtension(app)
