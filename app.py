@@ -3,7 +3,7 @@
 from flask import Flask, request, render_template, redirect, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
 ###importing db object and connect_db function from models module
-from models import db, connect_db, User 
+from models import db, connect_db, User, Post 
 
 app = Flask(__name__)
 
@@ -86,3 +86,94 @@ def new_user_update_to_db():
     db.session.add(new_user)
     db.session.commit()
     return redirect("/")
+
+
+@app.route('/user/<int: user_id>/posts/new', methods=["GET"])
+def show_form(user_id):
+    """Show a for to create a new post for a specific user"""
+    
+    user = User.query.get_or_404(user_id)
+    return render_template('New_Post_Form.html', user=user)
+    
+    
+    
+@app.route('/user/<int: user_id>/posts/new', methods=["POST"])
+def handle_add(user_id):
+    """Handle a form submission for creating a new post belonging to a user
+    """
+    user = User.query.get_or_404(user_id)
+    new_post = Post(title=request.form['title'], 
+                    content=request.form['content'],
+                    user=user)
+    
+    db.session.add(new_post)
+    db.session.commit()
+    flash(f"Post '{new_post.title}' added.")
+    return redirect(f"/users/{user_id}")
+    
+    
+    
+@app.route('/posts/<int: post_id>')
+def show_post(post_id):
+    """Show a page with info on a specific post
+    """
+    
+    post = Post.query.get_or_404(post_id)
+    return render_template('Post_Detail_Page.html', post=post)
+    
+    
+
+@app.route('/posts/<int: post_id>/edit', methods=["GET"])
+def edit_post(post_id):
+    """Show a form to edit an existing post
+    """
+    post = Post.query.get_or_404(post_id)
+    return render_template('Post_Edit_Page.html', post=post)
+    
+    
+    
+@app.route('/posts/<int: post_id>/edit', methods=["POST"])  
+def handle_edit_post(post_id):
+    """Handle form submission to an update of an existing post
+    """
+    post = Post.query.get_or_404(post_id)
+    post.title = request.form['title']
+    post.content = request.form['content']
+    
+    db.session.add(post)
+    db.session.commit()
+    flash(f"Post '{post.title}' edited.")
+    
+    return redirect(f"/users/{post.user_id}")
+    
+    
+    
+@app.route('/posts/<int: post_id>/delete', methods=["POST"])
+def delete_post(post_id):
+    """Handle form submission for deleting an existing post
+    """
+    
+    post= Post.query.get_or_404(post_id)
+    
+###Bonus Stuff
+
+@app.route('/')
+def root():
+    """Show recent list of posts, with only the 5 most recent first in desc order."""
+    
+    posts = Post.query.order_by(Post.created_at.desc()).limit(5).all()
+    return render_template("Homepage.html", posts=posts)                      
+
+@app.errorhandler(404)
+def page_not_found(e):
+    """Show a 404 not found page
+
+    Args:
+        e (exception object): error object
+    """
+    
+    return render_template('404.html'), 404
+
+""" # Error handling can also be done without the decorator like below based on docs
+app.register_error_handler(400, page_not_found) """
+
