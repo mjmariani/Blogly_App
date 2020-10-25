@@ -3,7 +3,7 @@
 from flask import Flask, request, render_template, redirect, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
 ###importing db object and connect_db function from models module
-from models import db, connect_db, User, Post 
+from models import db, connect_db, User, Post, Tag, PostTag 
 
 app = Flask(__name__)
 
@@ -176,4 +176,88 @@ def page_not_found(e):
 
 """ # Error handling can also be done without the decorator like below based on docs
 app.register_error_handler(400, page_not_found) """
+
+@app.route('/tags', methods=['GET'])
+def tags_index():
+    """Show a page with all tags
+    """
+    
+    tags = Tag.query.all()
+    return render_template("Show_Tag.html", tags=tags)
+
+@app.route('/tags/new', methods=['GET'])
+def tag_new_form():
+    """Show form to create a new tag
+    """
+    
+    posts = Post.query.all()
+    return render_template('Add_Tag.html', posts=posts)
+
+@app.route('/tags/new', methods=['POST'])
+def tags_new():
+    """Handle form submission for creating a new tag
+    """
+    
+    post_ids = [int(num) for num in request.form.getlist("posts")]
+    posts = Post.query.filter(Post.id.in_(post_ids)).all()
+    new_tag = Tag(name=request.form['name'], posts=posts)
+    
+    db.session.add(new_tag)
+    db.session.commit()
+    flash(f"Tag '{new_tag.name}' added.")
+    
+    return redirect("List_Tag.html")
+
+@app.route('/tags/<int:tag_id>', methods=['GET'])
+def tags_show(tag_id):
+    """Show a page with information on a specific tag
+
+    Args:
+        tag_id ([type]): [description]
+    """
+    
+    tag = Tag.query.get_or_404(tag_id)
+    return render_template('Show_Tag.html', tag=tag)
+
+@app.route('/tags/<int:tag_id>/edit')
+def tags_edit_form(tag_id):
+    """Show a form to edit an existing tag
+
+    Args:
+        tag_id ([type]): [description]
+    """
+    
+    tag = Tag.query.get_or_404(tag_id)
+    posts = Post.query.all()
+    return render_template('Edit_Tag.html', tag=tag, posts=posts)
+
+@app.route('/tags/<int:tag_id>/edit', methods=['POST'])
+def tags_edit(tag_id):
+    """Handle form submission for updating an existing tag
+
+    Args:
+        tag_id ([type]): [description]
+    """
+    
+    tag = Tag.query.get_or_404(tag_id)
+    tag.name = request.form['name']
+    post_ids = [int(num) for num in request.form.getlist("posts")]
+    tag.posts = Post.query.filter(Post.id.in_(post_ids)).all()
+    
+    db.session.add(tag)
+    db.session.commit()
+    flash(f"Tag '{tag.name}' edited.")
+    
+    return redirect("/tags")
+
+@app.route('/tags/<int:tag_id>/delete', methods=["POST"])
+def tags_destroy(tag_id):
+    """Handle form submission for deleting an existing tag"""
+
+    tag = Tag.query.get_or_404(tag_id)
+    db.session.delete(tag)
+    db.session.commit()
+    flash(f"Tag '{tag.name}' deleted.")
+
+    return redirect("/tags")
 

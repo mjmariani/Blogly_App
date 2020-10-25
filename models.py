@@ -46,7 +46,7 @@ class Post(db.Model):
     
     def __repr__(self):
         p =self
-        return f"<>"
+        return f"<Post id={p.id}, Title={p.title}, content={p.content}, Time Created={p.created_at}, User Id={p.user_id}>"
     
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     
@@ -60,4 +60,33 @@ class Post(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey(User.id), 
                         nullable=False, unique=False)
     
+    @property
+    def friendly_date(self):
+        """Return nicely-formatted date."""
+
+        return self.created_at.strftime("%b %-d,  %Y, %-I:%M %p")
     
+    
+class PostTag(db.Model):
+    """Tag on a post."""
+    
+    __tablename__ = "posts_tags"
+    
+    post_id = db.Column(db.Integer, db.ForeignKey('Posts.id'), primary_key=True)
+    tag_id = db.Column(db.Integer, db.ForeignKey('Tags.id'), primary_key=True)
+    
+class Tag(db.Model):
+    """Tag that can be added to posts."""
+    
+    __tablename__ = 'Tags'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Text, nullable=False, unique=True)
+    
+    ## The through-relationship below with secondary argument allows to connect records
+    ## from Tags table to Posts table
+    posts = db.relationship('Post', secondary="posts_tags",
+        backref="tags",
+    )
+    
+        
